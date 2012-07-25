@@ -52,16 +52,16 @@ int parse_file(struct parameter * param)
 	FILE *fp = fopen(param->filepath, "r");
 
 	if(!fp) {
-		score_debug( "fopen failed \n");	
+		anuz_debug( "fopen failed \n");	
 	}
 
 	while ((tok = fgets(buf, sizeof(buf), fp)) != NULL) {
-		score_debug("buffer = %s", buf);
+		anuz_debug("buffer = %s", buf);
 		 tok = strtok(buf, delim);		
-		score_debug("tok = %s\n",tok);
+		anuz_debug("tok = %s\n",tok);
 		 if(!strcmp(compare_string[i], tok)) {
 			 tok = strtok(NULL, delim);		
-			 score_debug("tok = %s",tok);
+			 anuz_debug("tok = %s",tok);
 			 strcpy(param->params[i++], tok);
 		 }
 	}
@@ -73,7 +73,7 @@ void free_list(struct element *list)
 	struct element *temp;
 	while(list){
 		temp = list->next;	
-		score_debug("inside free = %d\n",list->count);
+		anuz_debug("inside free = %d\n",list->count);
 		free(list->string);
 		list->string = NULL;
 		free(list);

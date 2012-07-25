@@ -13,7 +13,7 @@
 #include <pthread.h>
 
 #define MAX_PORT 4
-#define score_debug printf
+#define anuz_debug printf
 
 extern int errno;
 short unsigned int ports  = 0x9123; /* higher port starting from 37155*/ 
@@ -66,7 +66,7 @@ void get_me_the_fds(fd_set active_sd, int *fd)
 		printf("%s %d\n",strerror(errno), __LINE__);
 		exit (EXIT_FAILURE);
 	}
-	score_debug("number of descriptor %d\n", status);
+	anuz_debug("number of descriptor %d\n", status);
 	for(i = 0; i < FD_SETSIZE; ++i)
 		if (FD_ISSET (i, &active_sd)) {
 			*fd = i; 
@@ -94,7 +94,7 @@ void get_me_the_buffer(int sock, char*  input, struct sockaddr_in pin)
 		printf("recvfrom error");
 	}
 	strcpy(input, buf);
-	score_debug("%s\n",buf);
+	anuz_debug("%s\n",buf);
 }
 
 void child_stuff( struct local_s *local)
@@ -135,7 +135,7 @@ void * thread_function(void * args)
 		memset(local->input1, 0, sizeof(local->input1));
 		sprintf(local->input1, "__In_Thread-child-%d,count-%d\n",local->i,*local->count);
 		pthread_mutex_unlock(&local->lock);
-		score_debug("lock released at %d %d %d\n", __LINE__, *local->count, local->i);
+		anuz_debug("lock released at %d %d %d\n", __LINE__, *local->count, local->i);
 
 		child_stuff(local);
 
@@ -168,7 +168,7 @@ void demonize(void)
 	static pthread_mutex_t work_mutex[MAX_PORT]; /* the lock this file needs */
 
 	fd1 = open ("/tmp/whatever.txt", O_CREAT |  O_RDWR | O_TRUNC, 0644);
-	score_debug("parent id %d\n",(int)getpid());
+	anuz_debug("parent id %d\n",(int)getpid());
 
 	FD_ZERO(&active);
 	FD_ZERO(&readf);
@@ -213,11 +213,11 @@ void demonize(void)
 			while(count < 10) {
 
 				pthread_mutex_lock(&local_data.lock);
-//				score_debug(" lock holding in child at %d %d %d\n", __LINE__, count, i);
+//				anuz_debug(" lock holding in child at %d %d %d\n", __LINE__, count, i);
 				memset(local_data.input1, 0, sizeof(local_data.input1));
 				sprintf(local_data.input1, "__In_Main-child-%d,count-%d\n",local_data.i,*local_data.count);
 				pthread_mutex_unlock(&local_data.lock);
-//				score_debug(" lock released in child at %d %d %d\n", __LINE__, count, i);
+//				anuz_debug(" lock released in child at %d %d %d\n", __LINE__, count, i);
 
 				child_stuff(&local_data);
 
@@ -225,7 +225,7 @@ void demonize(void)
 //				printf(" lock holding in child at %d %d %d\n", __LINE__, count, i);
 				count++; /* we need this count to be 10 in total from both the threads. */
 				pthread_mutex_unlock(&local_data.lock);
-//				score_debug(" lock released in child at %d %d %d\n", __LINE__, count, i);
+//				anuz_debug(" lock released in child at %d %d %d\n", __LINE__, count, i);
 
 			}
 
@@ -233,14 +233,14 @@ void demonize(void)
 			if(res != 0) {
 				error_exit("thread joined failed \n");
 			}  
-			score_debug("Thread joined, it returned\n  %s\n", (char *)thread_result);  
+			anuz_debug("Thread joined, it returned\n  %s\n", (char *)thread_result);  
 			pthread_mutex_destroy(&work_mutex[i]);
 			exit(EXIT_SUCCESS);/* safe exit */
 		} 
 	}
 
 	while( count1 < 40 ) {
-		score_debug("id =  %d\n",(int)getpid());
+		anuz_debug("id =  %d\n",(int)getpid());
 			readf = active; /* ok this is confusing because of the name as active and read */
 			if ((status = select (FD_SETSIZE, &readf, NULL, NULL, NULL)) < 0) {
 				printf("%s",strerror(errno));
@@ -250,17 +250,17 @@ void demonize(void)
 				if (FD_ISSET (i, &readf)) {
 					memset(buf,0, sizeof(buf));
 					if(read(i, buf, BUFSIZ)>0) {
-						score_debug("%s\n",buf);
+						anuz_debug("%s\n",buf);
 						count1++;
 						if(status = write(fd1, buf, strlen(buf)))
-							score_debug("%d line=%d\n",status, __LINE__);
+							anuz_debug("%d line=%d\n",status, __LINE__);
 					}
 				}
 			}
 
 			waitpid(-1, &status, WNOHANG);
 			if (WIFEXITED(status)) 
-				score_debug("exited, status=%d **COUNT**%d\n", WEXITSTATUS(status), count1);
+				anuz_debug("exited, status=%d **COUNT**%d\n", WEXITSTATUS(status), count1);
 	
 	}
 
@@ -281,7 +281,7 @@ void deamonify(void)
 	fd = open("/dev/null", O_RDWR);/* stdin */
 	(void) dup(fd);  /* stdout */
 	(void) dup(fd);  /* stderr */
-	score_debug ("again  process = %d\n ",getpid());
+	anuz_debug ("again  process = %d\n ",getpid());
 	//create_server();
 }
 
@@ -290,12 +290,12 @@ int demonize1()
 
 	pid_t pid;
 	if ((pid = fork()) == 0) {
-		score_debug("child process = %d %d \n ",getpid(), __LINE__);
+		anuz_debug("child process = %d %d \n ",getpid(), __LINE__);
 		deamonify();
 	} else if (pid < 0) {
 		fprintf(stderr,"fork error %s\n", strerror(errno));
 	} else {
-		score_debug("parent process = %d\n ",getpid());
+		anuz_debug("parent process = %d\n ",getpid());
 		return EXIT_SUCCESS;
 	}
 	return EXIT_FAILURE;
